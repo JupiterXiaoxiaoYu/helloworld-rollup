@@ -1,14 +1,14 @@
 # Build stage
 FROM rustlang/rust:nightly-bullseye as builder
 
-# Install build dependencies
+# Install build dependencies and Node.js 18
 RUN apt-get update && apt-get install -y \
     curl \
     build-essential \
     pkg-config \
-    nodejs \
-    npm \
     git \
+    && curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
+    && apt-get install -y nodejs \
     && rm -rf /var/lib/apt/lists/*
 
 # Install wasm-pack
@@ -34,7 +34,7 @@ RUN md5sum ts/node_modules/zkwasm-ts-server/src/application/application_bg.wasm 
     awk '{ print $1 }' | tr 'a-z' 'A-Z' > wasm.md5
 
 # Production stage
-FROM node:slim
+FROM node:18-slim
 
 WORKDIR /app
 
