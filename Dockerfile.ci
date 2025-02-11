@@ -1,5 +1,5 @@
 # Build stage
-FROM rustlang/rust:nightly-2023-06-01-slim as builder
+FROM rust:nightly-2023-06-01-slim as builder
 
 # Install build dependencies
 RUN apt-get update && apt-get install -y \
