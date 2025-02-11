@@ -23,6 +23,8 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+        with:
+          buildkitd-flags: --debug
 
       - name: Convert to lowercase
         id: lowercase
@@ -43,8 +45,7 @@ jobs:
           load: true
           file: Dockerfile.ci
           tags: ${{ env.REGISTRY }}/${{ env.REPO_LOWER }}:temp
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          no-cache: true
 
       - name: Get WASM MD5
         id: wasm-md5
@@ -74,8 +75,7 @@ jobs:
           tags: |
             ${{ env.REGISTRY }}/${{ env.REPO_LOWER }}-${{ steps.wasm-md5.outputs.MD5 }}:latest
             ${{ env.REGISTRY }}/${{ env.REPO_LOWER }}-${{ steps.wasm-md5.outputs.MD5 }}:${{ github.sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          no-cache: true
 
       - name: Notify build result
         if: always()
