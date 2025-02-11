@@ -53,7 +53,8 @@ jobs:
           docker create --name temp ${{ env.REGISTRY }}/${{ env.REPO_LOWER }}:temp
           docker cp temp:/app/wasm.md5 .
           docker rm temp
-          echo "MD5=$(cat wasm.md5)" >> $GITHUB_OUTPUT
+          MD5=$(cat wasm.md5 | tr '[:upper:]' '[:lower:]')
+          echo "MD5=$MD5" >> $GITHUB_OUTPUT
 
       - name: Extract metadata
         id: meta
