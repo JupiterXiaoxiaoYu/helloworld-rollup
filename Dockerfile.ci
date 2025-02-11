@@ -1,5 +1,5 @@
 # Build stage
-FROM rust:nightly-2023-06-01-slim as builder
+FROM rustlang/rust:nightly-bullseye as builder
 
 # Install build dependencies
 RUN apt-get update && apt-get install -y \
