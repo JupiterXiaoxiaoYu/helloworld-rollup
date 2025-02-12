@@ -11,5 +11,5 @@ spec:
   resources:
     requests:
       storage: {{ .Values.config.mongodb.persistence.size }}
-  storageClassName: manual
+  storageClassName: {{ .Values.config.mongodb.persistence.storageClassName }}
 {{- end }}

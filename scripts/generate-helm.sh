@@ -21,19 +21,21 @@ rm -f ${CHART_PATH}/values.yaml
 
 # 创建 PVC 模板
 cat > ${CHART_PATH}/templates/mongodb-pvc.yaml << EOL
+{{- if and .Values.config.mongodb.enabled .Values.config.mongodb.persistence.enabled }}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: {{ include "helloworld-rollup.fullname" . }}-mongodb-pvc
+  name: {{ include "${CHART_NAME}.fullname" . }}-mongodb-pvc
   labels:
-    {{- include "helloworld-rollup.labels" . | nindent 4 }}
+    {{- include "${CHART_NAME}.labels" . | nindent 4 }}
 spec:
   accessModes:
     - ReadWriteOnce
-  storageClassName: {{ .Values.config.mongodb.persistence.storageClassName }}
   resources:
     requests:
       storage: {{ .Values.config.mongodb.persistence.size }}
+  storageClassName: {{ .Values.config.mongodb.persistence.storageClassName }}
+{{- end }}
 EOL
 
 # 生成新的 values.yaml
@@ -353,7 +355,7 @@ spec:
   resources:
     requests:
       storage: {{ .Values.config.mongodb.persistence.size }}
-  storageClassName: manual
+  storageClassName: {{ .Values.config.mongodb.persistence.storageClassName }}
 {{- end }}
 EOL
 
