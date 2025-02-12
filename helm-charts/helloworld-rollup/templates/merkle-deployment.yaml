@@ -1,0 +1,25 @@
+{{- if .Values.config.merkle.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "helloworld-rollup.fullname" . }}-merkle
+  labels:
+    {{- include "helloworld-rollup.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ include "helloworld-rollup.fullname" . }}-merkle
+  template:
+    metadata:
+      labels:
+        app: {{ include "helloworld-rollup.fullname" . }}-merkle
+    spec:
+      containers:
+      - name: merkle
+        image: "{{ .Values.config.merkle.image.repository }}:{{ .Values.config.merkle.image.tag }}"
+        ports:
+        - containerPort: {{ .Values.config.merkle.port }}
+        env:
+        - name: URI
+          value: mongodb://{{ include "helloworld-rollup.fullname" . }}-mongodb:{{ .Values.config.mongodb.port }}
+{{- end }}

@@ -1,0 +1,22 @@
+{{- if .Values.config.redis.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "helloworld-rollup.fullname" . }}-redis
+  labels:
+    {{- include "helloworld-rollup.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ include "helloworld-rollup.fullname" . }}-redis
+  template:
+    metadata:
+      labels:
+        app: {{ include "helloworld-rollup.fullname" . }}-redis
+    spec:
+      containers:
+      - name: redis
+        image: "{{ .Values.config.redis.image.repository }}:{{ .Values.config.redis.image.tag }}"
+        ports:
+        - containerPort: {{ .Values.config.redis.port }}
+{{- end }}

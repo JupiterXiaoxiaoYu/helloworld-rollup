@@ -1,0 +1,52 @@
+# Default values for helloworld-rollup
+replicaCount: 1
+
+image:
+  repository: ghcr.io/jupiterxiaoxiaoyu/helloworld-rollup
+  pullPolicy: IfNotPresent
+  tag: "latest"  # 可以是 latest 或 MD5 值
+
+# 应用配置
+config:
+  mongodb:
+    enabled: true
+    image:
+      repository: mongo
+      tag: latest
+    port: 27017
+    persistence:
+      enabled: true
+      size: 1Gi
+  redis:
+    enabled: true
+    image:
+      repository: redis
+      tag: latest
+    port: 6379
+  merkle:
+    enabled: true
+    image:
+      repository: sinka2022/zkwasm-merkleservice
+      tag: latest
+    port: 3030
+
+service:
+  type: ClusterIP
+  port: 3000
+
+# 初始化容器配置
+initContainer:
+  enabled: true
+  image: node:18-slim
+
+resources:
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

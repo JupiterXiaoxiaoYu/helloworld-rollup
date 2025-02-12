@@ -74,11 +74,11 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           file: Dockerfile.ci
           tags: |
-            ${{ env.REGISTRY }}/${{ env.REPO_LOWER }}-${{ steps.wasm-md5.outputs.MD5 }}:latest
-            ${{ env.REGISTRY }}/${{ env.REPO_LOWER }}-${{ steps.wasm-md5.outputs.MD5 }}:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.REPO_LOWER }}:latest
+            ${{ env.REGISTRY }}/${{ env.REPO_LOWER }}:${{ steps.wasm-md5.outputs.MD5 }}
           no-cache: true
 
       - name: Notify build result
         if: always()
         run: |
-          echo "Image built and pushed: ${{ env.REGISTRY }}/${{ env.REPO_LOWER }}-${{ steps.wasm-md5.outputs.MD5 }}"
+          echo "Image built and pushed: ${{ env.REGISTRY }}/${{ env.REPO_LOWER }}"

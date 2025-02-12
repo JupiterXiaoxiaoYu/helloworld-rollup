@@ -17,10 +17,13 @@ build: ./src/admin.pubkey ./ts/src/service.js
 	#cp pkg/application_bg.js $(INSTALL_DIR)/application_bg.js
 	cp pkg/application_bg.wasm.d.ts $(INSTALL_DIR)/application_bg.wasm.d.ts
 	cd $(RUNNING_DIR) && npx tsc && cd -
+	chmod +x scripts/generate-helm.sh
+	./scripts/generate-helm.sh
 
 clean:
 	rm -rf pkg
 	rm -rf ./src/admin.pubkey
+	rm -rf helm-charts
 
 run:
 	node ./ts/src/service.js

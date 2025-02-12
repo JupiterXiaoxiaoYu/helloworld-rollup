@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "helloworld-rollup.fullname" . }}
+  labels:
+    {{- include "helloworld-rollup.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "helloworld-rollup.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "helloworld-rollup.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - name: app
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        command: ["node"]
+        args: ["src/service.js"]
+        workingDir: /app
+        env:
+        - name: URI
+          value: mongodb://{{ include "helloworld-rollup.fullname" . }}-mongodb:{{ .Values.config.mongodb.port }}
+        - name: REDISHOST
+          value: {{ include "helloworld-rollup.fullname" . }}-redis
+        - name: MERKLE_SERVER
+          value: http://{{ include "helloworld-rollup.fullname" . }}-merkle:{{ .Values.config.merkle.port }}
+        ports:
+        - containerPort: 3000
+          name: http
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        volumeMounts:
+        - name: app-files
+          mountPath: /app
+        resources:
+          {{- toYaml .Values.resources | nindent 12 }}
+
+      {{- if .Values.initContainer.enabled }}
+      initContainers:
+      - name: copy-files
+        image: {{ .Values.initContainer.image }}
+        command:
+        - /bin/sh
+        - -c
+        - |
+          echo "Setting up application..."
+          cp -rv /source/ts/. /app/
+          cd /app
+          echo "Installing dependencies..."
+          npm ci --verbose
+        volumeMounts:
+        - name: app-files
+          mountPath: /app
+        - name: source-files
+          mountPath: /source
+      {{- end }}
+
+      volumes:
+      - name: app-files
+        emptyDir: {}
+      - name: source-files
+        emptyDir: {}

@@ -1,0 +1,15 @@
+{{- if and .Values.config.mongodb.enabled .Values.config.mongodb.persistence.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "helloworld-rollup.fullname" . }}-mongodb-pvc
+  labels:
+    {{- include "helloworld-rollup.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.config.mongodb.persistence.size }}
+  storageClassName: manual
+{{- end }}
