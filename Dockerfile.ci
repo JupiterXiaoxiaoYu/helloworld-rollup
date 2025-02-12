@@ -1,9 +1,18 @@
 # Build stage
 FROM rust:bullseye as builder
 
-# Install specific nightly version
+# Install and verify specific nightly version
 RUN rustup default nightly-2023-06-01 && \
-    rustup target add wasm32-unknown-unknown
+    rustup target add wasm32-unknown-unknown && \
+    # 验证当前使用的版本
+    echo "Verifying Rust version:" && \
+    rustc --version && \
+    # 设置 RUSTUP_TOOLCHAIN 环境变量确保使用指定版本
+    echo "export RUSTUP_TOOLCHAIN=nightly-2023-06-01" >> /root/.bashrc && \
+    echo "export RUSTUP_TOOLCHAIN=nightly-2023-06-01" >> /root/.profile
+
+# 设置环境变量确保后续命令使用正确的版本
+ENV RUSTUP_TOOLCHAIN=nightly-2023-06-01
 
 # 添加构建参数
 ARG DEPLOY
@@ -66,7 +75,11 @@ RUN cd ts && \
 COPY . .
 
 # Build the application and generate MD5
-RUN make build && \
+
+
+RUN echo "check rust version" && \
+    rustc --version && \
+    make build && \
     mkdir -p /wasm && \
     md5sum ts/node_modules/zkwasm-ts-server/src/application/application_bg.wasm | \
     awk '{ print $1 }' | tr 'a-z' 'A-Z' > /wasm/wasm.md5
