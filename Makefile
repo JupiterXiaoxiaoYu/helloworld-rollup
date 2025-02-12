@@ -19,6 +19,8 @@ build: ./src/admin.pubkey ./ts/src/service.js
 	cd $(RUNNING_DIR) && npx tsc && cd -
 	chmod +x scripts/generate-helm.sh
 	./scripts/generate-helm.sh
+	echo "MD5:"
+	md5sum $(INSTALL_DIR)/application_bg.wasm | awk '{print $$1}'
 
 env: # 新目标：更新环境变量和 GitHub Secrets
 	@echo "Updating IMAGE in .env with new MD5..."
