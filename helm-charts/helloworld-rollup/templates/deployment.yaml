@@ -18,12 +18,14 @@ spec:
       - name: app
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         command: ["node"]
-        args: ["--experimental-modules", "ts/src/service.js"]
+        args: ["--experimental-modules", "--es-module-specifier-resolution=node", "ts/src/service.js"]
         env:
         - name: URI
           value: mongodb://{{ include "helloworld-rollup.fullname" . }}-mongodb:{{ .Values.config.mongodb.port }}
         - name: REDISHOST
           value: {{ include "helloworld-rollup.fullname" . }}-redis
+        - name: REDIS_PORT
+          value: "{{ .Values.config.redis.port }}"
         - name: MERKLE_SERVER
           value: http://{{ include "helloworld-rollup.fullname" . }}-merkle:{{ .Values.config.merkle.port }}
         ports:

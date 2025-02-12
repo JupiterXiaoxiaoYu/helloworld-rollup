@@ -124,12 +124,14 @@ spec:
       - name: app
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         command: ["node"]
-        args: ["--experimental-modules", "ts/src/service.js"]
+        args: ["--experimental-modules", "--es-module-specifier-resolution=node", "ts/src/service.js"]
         env:
         - name: URI
           value: mongodb://{{ include "${CHART_NAME}.fullname" . }}-mongodb:{{ .Values.config.mongodb.port }}
         - name: REDISHOST
           value: {{ include "${CHART_NAME}.fullname" . }}-redis
+        - name: REDIS_PORT
+          value: "{{ .Values.config.redis.port }}"
         - name: MERKLE_SERVER
           value: http://{{ include "${CHART_NAME}.fullname" . }}-merkle:{{ .Values.config.merkle.port }}
         ports:
@@ -363,6 +365,24 @@ spec:
       name: http
   selector:
     app: {{ include "${CHART_NAME}.fullname" . }}-merkle
+EOL
+
+# 生成 redis-service.yaml
+cat > ${CHART_PATH}/templates/redis-service.yaml << EOL
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "${CHART_NAME}.fullname" . }}-redis
+  labels:
+    {{- include "${CHART_NAME}.labels" . | nindent 4 }}
+spec:
+  ports:
+    - port: {{ .Values.config.redis.port }}
+      targetPort: {{ .Values.config.redis.port }}
+      protocol: TCP
+      name: redis
+  selector:
+    app: {{ include "${CHART_NAME}.fullname" . }}-redis
 EOL
 
 # 使脚本可执行
