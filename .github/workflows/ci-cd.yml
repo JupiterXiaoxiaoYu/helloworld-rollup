@@ -47,6 +47,19 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Debug build args
+        run: |
+          echo "Build arguments:"
+          echo "DEPLOY=${{ env.DEPLOY }}"
+          echo "USER_ADDRESS=${{ env.USER_ADDRESS }}"
+          echo "SETTLEMENT_CONTRACT_ADDRESS=${{ env.SETTLEMENT_CONTRACT_ADDRESS }}"
+          echo "RPC_PROVIDER=${{ env.RPC_PROVIDER }}"
+          echo "PORT=${{ env.PORT }}"
+          echo "AUTO_SUBMIT=${{ env.AUTO_SUBMIT }}"
+          echo "USER_PRIVATE_ACCOUNT=${{ env.USER_PRIVATE_ACCOUNT }}"
+          echo "SETTLER_PRIVATE_ACCOUNT=${{ env.SETTLER_PRIVATE_ACCOUNT }}"
+          echo "SERVER_ADMIN_KEY=${{ env.SERVER_ADMIN_KEY }}"
+
       - name: Build image
         uses: docker/build-push-action@v5
         with:
