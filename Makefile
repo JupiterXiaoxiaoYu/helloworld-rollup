@@ -17,7 +17,8 @@ build: ./src/admin.pubkey ./ts/src/service.js
 	#cp pkg/application_bg.js $(INSTALL_DIR)/application_bg.js
 	cp pkg/application_bg.wasm.d.ts $(INSTALL_DIR)/application_bg.wasm.d.ts
 	cd $(RUNNING_DIR) && npx tsc && cd -
-
+	chmod +x scripts/generate-helm.sh
+	./scripts/generate-helm.sh
 
 env: # 新目标：更新环境变量和 GitHub Secrets
 	@echo "Updating IMAGE in .env with new MD5..."
@@ -29,9 +30,8 @@ env: # 新目标：更新环境变量和 GitHub Secrets
 	fi
 	@echo "Updating GitHub Secrets from .env..."
 	chmod +x scripts/setup-secrets.sh
-	chmod +x scripts/generate-helm.sh
 	./scripts/setup-secrets.sh
-	./scripts/generate-helm.sh
+
 
 clean:
 	rm -rf pkg
