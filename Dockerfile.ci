@@ -106,12 +106,15 @@ COPY --from=builder /app/ts ./ts
 COPY --from=builder /app/src/admin.pubkey ./src/admin.pubkey
 COPY --from=builder /wasm/wasm.md5 ./wasm.md5
 
-# Add healthcheck
-HEALTHCHECK --interval=30s --timeout=3s \
-  CMD curl -f http://localhost:3000/health || exit 1
-
-# Run as non-root user
+# Create user first
 RUN groupadd -r appuser && useradd -r -g appuser appuser
+
+# Set correct permissions
+RUN chmod +x ts/publish.sh && \
+    chown -R appuser:appuser /app && \
+    chmod -R u+rw /app
+
+# Switch to non-root user
 USER appuser
 
 EXPOSE 3000
