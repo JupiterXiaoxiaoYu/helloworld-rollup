@@ -125,7 +125,6 @@ spec:
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         command: ["node"]
         args: ["src/service.js"]
-        workingDir: /app
         env:
         - name: URI
           value: mongodb://{{ include "${CHART_NAME}.fullname" . }}-mongodb:{{ .Values.config.mongodb.port }}
@@ -148,37 +147,8 @@ spec:
             port: http
           initialDelaySeconds: 15
           periodSeconds: 20
-        volumeMounts:
-        - name: app-files
-          mountPath: /app
         resources:
-          {{- toYaml .Values.resources | nindent 12 }}
-
-      {{- if .Values.initContainer.enabled }}
-      initContainers:
-      - name: copy-files
-        image: {{ .Values.initContainer.image }}
-        command:
-        - /bin/sh
-        - -c
-        - |
-          echo "Setting up application..."
-          cp -rv /source/ts/. /app/
-          cd /app
-          echo "Installing dependencies..."
-          npm ci --verbose
-        volumeMounts:
-        - name: app-files
-          mountPath: /app
-        - name: source-files
-          mountPath: /source
-      {{- end }}
-
-      volumes:
-      - name: app-files
-        emptyDir: {}
-      - name: source-files
-        emptyDir: {}
+          {{- toYaml .Values.resources | nindent 10 }}
 EOL
 
 # 生成 service.yaml
