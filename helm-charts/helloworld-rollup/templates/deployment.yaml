@@ -18,7 +18,7 @@ spec:
       - name: app
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         command: ["node"]
-        args: ["src/service.js"]
+        args: ["ts/src/service.js"]
         env:
         - name: URI
           value: mongodb://{{ include "helloworld-rollup.fullname" . }}-mongodb:{{ .Values.config.mongodb.port }}
