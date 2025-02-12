@@ -9,6 +9,15 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
+  DEPLOY: ${{ secrets.DEPLOY }}
+  USER_PRIVATE_ACCOUNT: ${{ secrets.USER_PRIVATE_ACCOUNT }}
+  USER_ADDRESS: ${{ secrets.USER_ADDRESS }}
+  SETTLEMENT_CONTRACT_ADDRESS: ${{ secrets.SETTLEMENT_CONTRACT_ADDRESS }}
+  RPC_PROVIDER: ${{ secrets.RPC_PROVIDER }}
+  SETTLER_PRIVATE_ACCOUNT: ${{ secrets.SETTLER_PRIVATE_ACCOUNT }}
+  SERVER_ADMIN_KEY: ${{ secrets.SERVER_ADMIN_KEY }}
+  PORT: ${{ secrets.PORT }}
+  AUTO_SUBMIT: ${{ secrets.AUTO_SUBMIT }}
 
 jobs:
   build-and-push:
@@ -45,6 +54,16 @@ jobs:
           load: true
           file: Dockerfile.ci
           tags: ${{ env.REGISTRY }}/${{ env.REPO_LOWER }}:temp
+          build-args: |
+            DEPLOY=${{ env.DEPLOY }}
+            USER_PRIVATE_ACCOUNT=${{ env.USER_PRIVATE_ACCOUNT }}
+            USER_ADDRESS=${{ env.USER_ADDRESS }}
+            SETTLEMENT_CONTRACT_ADDRESS=${{ env.SETTLEMENT_CONTRACT_ADDRESS }}
+            RPC_PROVIDER=${{ env.RPC_PROVIDER }}
+            SETTLER_PRIVATE_ACCOUNT=${{ env.SETTLER_PRIVATE_ACCOUNT }}
+            SERVER_ADMIN_KEY=${{ env.SERVER_ADMIN_KEY }}
+            PORT=${{ env.PORT }}
+            AUTO_SUBMIT=${{ env.AUTO_SUBMIT }}
           no-cache: true
 
       - name: Get WASM MD5
