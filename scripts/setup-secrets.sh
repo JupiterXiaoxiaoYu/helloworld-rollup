@@ -126,7 +126,7 @@ while IFS='=' read -r key value || [ -n "$key" ]; do
     value=$(echo $value | tr -d '"' | tr -d "'")
     
     # 设置 secret，添加重试和错误处理
-    echo "Setting secret: $key"
+    echo "Setting secret: $key with value: $value"
     if ! retry_command gh secret set "$key" <<< "$value"; then
         echo "Failed to set secret: $key"
         exit 1
