@@ -1,5 +1,9 @@
 # Build stage
-FROM rustlang/rust:nightly-2023-06-01-bullseye as builder
+FROM rust:bullseye as builder
+
+# Install specific nightly version
+RUN rustup default nightly-2023-06-01 && \
+    rustup target add wasm32-unknown-unknown
 
 # 添加构建参数
 ARG DEPLOY
