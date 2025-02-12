@@ -24,7 +24,18 @@ COPY ts/tsconfig.json ts/
 
 # Create dummy source files to cache dependencies
 RUN mkdir src && echo "fn main() {}" > src/lib.rs
-RUN cd ts && npm ci
+# Add retry mechanism and clean npm cache before install
+RUN cd ts && \
+    npm cache clean --force && \
+    for i in {1..3}; do \
+      npm ci && break || \
+      if [ $i -lt 3 ]; then \
+        echo "Retry $i..." && \
+        sleep 5; \
+      else \
+        exit 1; \
+      fi \
+    done
 
 # Copy actual source code
 COPY . .
