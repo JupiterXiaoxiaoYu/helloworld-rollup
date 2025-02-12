@@ -1,14 +1,5 @@
 #!/bin/bash
 
-# 检查 helm 是否安装
-if helm version &> /dev/null; then
-    echo "Helm is installed, proceeding..."
-else
-    echo "Helm is not installed. Please install Helm first."
-    echo "Visit: https://helm.sh/docs/intro/install/"
-    exit 1
-fi
-
 # 设置变量
 CHART_NAME="helloworld-rollup"
 CHART_PATH="./helm-charts/${CHART_NAME}"
