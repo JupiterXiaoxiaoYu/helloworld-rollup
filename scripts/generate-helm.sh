@@ -153,6 +153,34 @@ spec:
           {{- toYaml .Values.resources | nindent 10 }}
 EOL
 
+# 生成 configmap.yaml 来存储非敏感的环境变量
+cat > ${CHART_PATH}/templates/configmap.yaml << EOL
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "${CHART_NAME}.fullname" . }}-config
+data:
+  DEPLOY: {{ .Values.env.DEPLOY | quote }}
+  USER_ADDRESS: {{ .Values.env.USER_ADDRESS | quote }}
+  SETTLEMENT_CONTRACT_ADDRESS: {{ .Values.env.SETTLEMENT_CONTRACT_ADDRESS | quote }}
+  RPC_PROVIDER: {{ .Values.env.RPC_PROVIDER | quote }}
+  PORT: {{ .Values.env.PORT | quote }}
+  AUTO_SUBMIT: {{ .Values.env.AUTO_SUBMIT | quote }}
+EOL
+
+# 生成 secret.yaml 来存储敏感的环境变量
+cat > ${CHART_PATH}/templates/secret.yaml << EOL
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ include "${CHART_NAME}.fullname" . }}-secret
+type: Opaque
+data:
+  USER_PRIVATE_ACCOUNT: {{ .Values.env.USER_PRIVATE_ACCOUNT | b64enc | quote }}
+  SETTLER_PRIVATE_ACCOUNT: {{ .Values.env.SETTLER_PRIVATE_ACCOUNT | b64enc | quote }}
+  SERVER_ADMIN_KEY: {{ .Values.env.SERVER_ADMIN_KEY | b64enc | quote }}
+EOL
+
 # 生成 service.yaml
 cat > ${CHART_PATH}/templates/service.yaml << EOL
 apiVersion: v1

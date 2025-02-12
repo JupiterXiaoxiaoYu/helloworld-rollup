@@ -96,8 +96,27 @@ if ! gh auth status &> /dev/null; then
     gh auth login
 fi
 
+# 添加重试函数
+retry_command() {
+    local n=1
+    local max=5
+    local delay=15
+    while true; do
+        "$@" && break || {
+            if [[ $n -lt $max ]]; then
+                ((n++))
+                echo "Command failed. Attempt $n/$max:"
+                sleep $delay;
+            else
+                echo "The command has failed after $n attempts."
+                return 1
+            fi
+        }
+    done
+}
+
 # 从 .env 文件读取并设置 secrets
-while IFS='=' read -r key value; do
+while IFS='=' read -r key value || [ -n "$key" ]; do
     # 跳过空行和注释
     if [ -z "$key" ] || [[ $key == \#* ]]; then
         continue
@@ -106,9 +125,19 @@ while IFS='=' read -r key value; do
     # 移除引号
     value=$(echo $value | tr -d '"' | tr -d "'")
     
-    # 设置 secret
+    # 设置 secret，添加重试和错误处理
     echo "Setting secret: $key"
-    echo "$value" | gh secret set "$key"
+    if ! retry_command gh secret set "$key" <<< "$value"; then
+        echo "Failed to set secret: $key"
+        exit 1
+    fi
 done < .env
 
-echo "All secrets have been set successfully!" 
+# 验证设置是否成功
+echo "Verifying secrets..."
+if gh secret list &> /dev/null; then
+    echo "All secrets have been set and verified successfully!"
+else
+    echo "Failed to verify secrets. Please check your GitHub permissions and connection."
+    exit 1
+fi 
