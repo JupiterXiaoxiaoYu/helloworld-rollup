@@ -124,7 +124,7 @@ spec:
       - name: app
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         command: ["node"]
-        args: ["ts/src/service.js"]
+        args: ["--experimental-modules", "ts/src/service.js"]
         env:
         - name: URI
           value: mongodb://{{ include "${CHART_NAME}.fullname" . }}-mongodb:{{ .Values.config.mongodb.port }}
