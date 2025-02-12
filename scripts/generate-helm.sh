@@ -137,18 +137,6 @@ spec:
         ports:
         - containerPort: 3000
           name: http
-        readinessProbe:
-          httpGet:
-            path: /health
-            port: http
-          initialDelaySeconds: 5
-          periodSeconds: 10
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: http
-          initialDelaySeconds: 15
-          periodSeconds: 20
         resources:
           {{- toYaml .Values.resources | nindent 10 }}
 EOL
