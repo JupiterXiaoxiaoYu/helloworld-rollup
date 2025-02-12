@@ -47,13 +47,25 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Debug build args
+      - name: Debug Secrets
         run: |
-          echo "DEPLOY=${{ secrets.DEPLOY }}"
-          echo "USER_ADDRESS=${{ secrets.USER_ADDRESS }}"
+          echo "Checking if secrets are available:"
+          echo "DEPLOY is set: ${{ secrets.DEPLOY != '' }}"
+          echo "USER_ADDRESS is set: ${{ secrets.USER_ADDRESS != '' }}"
+          echo "PORT is set: ${{ secrets.PORT != '' }}"
 
       - name: Build image
         uses: docker/build-push-action@v5
+        env:
+          DEPLOY: ${{ secrets.DEPLOY }}
+          USER_PRIVATE_ACCOUNT: ${{ secrets.USER_PRIVATE_ACCOUNT }}
+          USER_ADDRESS: ${{ secrets.USER_ADDRESS }}
+          SETTLEMENT_CONTRACT_ADDRESS: ${{ secrets.SETTLEMENT_CONTRACT_ADDRESS }}
+          RPC_PROVIDER: ${{ secrets.RPC_PROVIDER }}
+          SETTLER_PRIVATE_ACCOUNT: ${{ secrets.SETTLER_PRIVATE_ACCOUNT }}
+          SERVER_ADMIN_KEY: ${{ secrets.SERVER_ADMIN_KEY }}
+          PORT: ${{ secrets.PORT }}
+          AUTO_SUBMIT: ${{ secrets.AUTO_SUBMIT }}
         with:
           context: .
           load: true
