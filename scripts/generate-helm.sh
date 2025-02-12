@@ -19,6 +19,23 @@ rm -f ${CHART_PATH}/templates/ingress.yaml
 rm -f ${CHART_PATH}/templates/NOTES.txt
 rm -f ${CHART_PATH}/values.yaml
 
+# 创建 PVC 模板
+cat > ${CHART_PATH}/templates/mongodb-pvc.yaml << EOL
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "helloworld-rollup.fullname" . }}-mongodb-pvc
+  labels:
+    {{- include "helloworld-rollup.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: {{ .Values.config.mongodb.persistence.storageClassName }}
+  resources:
+    requests:
+      storage: {{ .Values.config.mongodb.persistence.size }}
+EOL
+
 # 生成新的 values.yaml
 cat > ${CHART_PATH}/values.yaml << EOL
 # Default values for ${CHART_NAME}
@@ -39,8 +56,15 @@ config:
     port: 27017
     persistence:
       enabled: true
-      storageClassName: csi-disk  
+      storageClassName: csi-disk-topology
       size: 10Gi
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "100m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
   redis:
     enabled: true
     image:
@@ -300,25 +324,6 @@ spec:
         env:
         - name: URI
           value: mongodb://{{ include "${CHART_NAME}.fullname" . }}-mongodb:{{ .Values.config.mongodb.port }}
-{{- end }}
-EOL
-
-# 生成 mongodb-pvc.yaml
-cat > ${CHART_PATH}/templates/mongodb-pvc.yaml << EOL
-{{- if and .Values.config.mongodb.enabled .Values.config.mongodb.persistence.enabled }}
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: {{ include "${CHART_NAME}.fullname" . }}-mongodb-pvc
-  labels:
-    {{- include "${CHART_NAME}.labels" . | nindent 4 }}
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: {{ .Values.config.mongodb.persistence.size }}
-  storageClassName: manual
 {{- end }}
 EOL
 
