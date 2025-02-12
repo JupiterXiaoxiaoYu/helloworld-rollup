@@ -102,9 +102,7 @@ RUN echo "Verifying environment variables:" && \
 WORKDIR /app
 
 # Copy only necessary files from builder
-COPY --from=builder /app/ts/node_modules ./ts/node_modules
-COPY --from=builder /app/ts/src ./ts/src
-COPY --from=builder /app/ts/package.json ./ts/package.json
+COPY --from=builder /app/ts ./ts
 COPY --from=builder /app/src/admin.pubkey ./src/admin.pubkey
 COPY --from=builder /wasm/wasm.md5 ./wasm.md5
 
