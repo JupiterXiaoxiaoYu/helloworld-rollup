@@ -7,13 +7,16 @@ CHART_PATH="./helm-charts/${CHART_NAME}"
 # 创建必要的目录
 mkdir -p ${CHART_PATH}/templates
 
-# 创建基础 chart
-if [ ! -d "${CHART_PATH}" ]; then
-    helm create ${CHART_PATH}
-fi
+# 创建基础 chart（这会自动创建所有必要文件，包括 _helpers.tpl）
+helm create ${CHART_PATH}
 
-# 清理默认的 nginx 相关配置
-rm -rf ${CHART_PATH}/templates/*
+# 清理默认的 nginx 相关配置，但保留 _helpers.tpl
+rm -f ${CHART_PATH}/templates/deployment.yaml
+rm -f ${CHART_PATH}/templates/service.yaml
+rm -f ${CHART_PATH}/templates/serviceaccount.yaml
+rm -f ${CHART_PATH}/templates/hpa.yaml
+rm -f ${CHART_PATH}/templates/ingress.yaml
+rm -f ${CHART_PATH}/templates/NOTES.txt
 rm -f ${CHART_PATH}/values.yaml
 
 # 生成新的 values.yaml
