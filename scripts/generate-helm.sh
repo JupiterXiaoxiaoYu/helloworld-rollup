@@ -39,7 +39,8 @@ config:
     port: 27017
     persistence:
       enabled: true
-      size: 1Gi
+      storageClassName: csi-disk  
+      size: 10Gi
   redis:
     enabled: true
     image:
