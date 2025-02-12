@@ -50,15 +50,16 @@ jobs:
       - name: Debug build args
         run: |
           echo "Build arguments:"
-          echo "DEPLOY=${{ env.DEPLOY }}"
-          echo "USER_ADDRESS=${{ env.USER_ADDRESS }}"
-          echo "SETTLEMENT_CONTRACT_ADDRESS=${{ env.SETTLEMENT_CONTRACT_ADDRESS }}"
-          echo "RPC_PROVIDER=${{ env.RPC_PROVIDER }}"
-          echo "PORT=${{ env.PORT }}"
-          echo "AUTO_SUBMIT=${{ env.AUTO_SUBMIT }}"
-          echo "USER_PRIVATE_ACCOUNT=${{ env.USER_PRIVATE_ACCOUNT }}"
-          echo "SETTLER_PRIVATE_ACCOUNT=${{ env.SETTLER_PRIVATE_ACCOUNT }}"
-          echo "SERVER_ADMIN_KEY=${{ env.SERVER_ADMIN_KEY }}"
+          echo "DEPLOY=${{ secrets.DEPLOY }}"
+          echo "USER_ADDRESS=${{ secrets.USER_ADDRESS }}"
+          echo "SETTLEMENT_CONTRACT_ADDRESS=${{ secrets.SETTLEMENT_CONTRACT_ADDRESS }}"
+          echo "RPC_PROVIDER=${{ secrets.RPC_PROVIDER }}"
+          echo "PORT=${{ secrets.PORT }}"
+          echo "AUTO_SUBMIT=${{ secrets.AUTO_SUBMIT }}"
+          # 不打印敏感信息
+          echo "USER_PRIVATE_ACCOUNT=***"
+          echo "SETTLER_PRIVATE_ACCOUNT=***"
+          echo "SERVER_ADMIN_KEY=***"
 
       - name: Build image
         uses: docker/build-push-action@v5
@@ -68,15 +69,15 @@ jobs:
           file: Dockerfile.ci
           tags: ${{ env.REGISTRY }}/${{ env.REPO_LOWER }}:temp
           build-args: |
-            DEPLOY=${{ env.DEPLOY }}
-            USER_PRIVATE_ACCOUNT=${{ env.USER_PRIVATE_ACCOUNT }}
-            USER_ADDRESS=${{ env.USER_ADDRESS }}
-            SETTLEMENT_CONTRACT_ADDRESS=${{ env.SETTLEMENT_CONTRACT_ADDRESS }}
-            RPC_PROVIDER=${{ env.RPC_PROVIDER }}
-            SETTLER_PRIVATE_ACCOUNT=${{ env.SETTLER_PRIVATE_ACCOUNT }}
-            SERVER_ADMIN_KEY=${{ env.SERVER_ADMIN_KEY }}
-            PORT=${{ env.PORT }}
-            AUTO_SUBMIT=${{ env.AUTO_SUBMIT }}
+            DEPLOY=${{ secrets.DEPLOY }}
+            USER_PRIVATE_ACCOUNT=${{ secrets.USER_PRIVATE_ACCOUNT }}
+            USER_ADDRESS=${{ secrets.USER_ADDRESS }}
+            SETTLEMENT_CONTRACT_ADDRESS=${{ secrets.SETTLEMENT_CONTRACT_ADDRESS }}
+            RPC_PROVIDER=${{ secrets.RPC_PROVIDER }}
+            SETTLER_PRIVATE_ACCOUNT=${{ secrets.SETTLER_PRIVATE_ACCOUNT }}
+            SERVER_ADMIN_KEY=${{ secrets.SERVER_ADMIN_KEY }}
+            PORT=${{ secrets.PORT }}
+            AUTO_SUBMIT=${{ secrets.AUTO_SUBMIT }}
           no-cache: true
 
       - name: Get WASM MD5
