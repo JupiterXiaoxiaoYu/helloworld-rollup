@@ -49,17 +49,8 @@ jobs:
 
       - name: Debug build args
         run: |
-          echo "Build arguments:"
           echo "DEPLOY=${{ secrets.DEPLOY }}"
           echo "USER_ADDRESS=${{ secrets.USER_ADDRESS }}"
-          echo "SETTLEMENT_CONTRACT_ADDRESS=${{ secrets.SETTLEMENT_CONTRACT_ADDRESS }}"
-          echo "RPC_PROVIDER=${{ secrets.RPC_PROVIDER }}"
-          echo "PORT=${{ secrets.PORT }}"
-          echo "AUTO_SUBMIT=${{ secrets.AUTO_SUBMIT }}"
-          # 不打印敏感信息
-          echo "USER_PRIVATE_ACCOUNT=***"
-          echo "SETTLER_PRIVATE_ACCOUNT=***"
-          echo "SERVER_ADMIN_KEY=***"
 
       - name: Build image
         uses: docker/build-push-action@v5
