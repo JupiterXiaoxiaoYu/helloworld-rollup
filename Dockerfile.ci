@@ -1,5 +1,5 @@
 # Build stage
-FROM rustlang/rust:nightly-bullseye as builder
+FROM rustlang/rust:nightly-2023-06-01-bullseye as builder
 
 # 添加构建参数
 ARG DEPLOY
