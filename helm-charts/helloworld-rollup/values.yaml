@@ -16,21 +16,21 @@ config:
     port: 27017
     persistence:
       enabled: true
-      storageClassName: csi-disk-topology
+      storageClassName: csi-disk  
       size: 10Gi
-    resources:
-      requests:
-        memory: "256Mi"
-        cpu: "100m"
-      limits:
-        memory: "512Mi"
-        cpu: "500m"
   redis:
     enabled: true
     image:
       repository: redis
       tag: latest
     port: 6379
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "100m"
+      limits:
+        memory: "256Mi"
+        cpu: "200m"
   merkle:
     enabled: true
     image:

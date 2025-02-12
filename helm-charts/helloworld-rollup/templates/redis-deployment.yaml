@@ -19,4 +19,6 @@ spec:
         image: "{{ .Values.config.redis.image.repository }}:{{ .Values.config.redis.image.tag }}"
         ports:
         - containerPort: {{ .Values.config.redis.port }}
+        resources:
+          {{- toYaml .Values.config.redis.resources | nindent 10 }}
 {{- end }}

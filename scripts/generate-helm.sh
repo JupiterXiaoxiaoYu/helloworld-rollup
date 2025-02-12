@@ -56,21 +56,21 @@ config:
     port: 27017
     persistence:
       enabled: true
-      storageClassName: csi-disk-topology
+      storageClassName: csi-disk  
       size: 10Gi
-    resources:
-      requests:
-        memory: "256Mi"
-        cpu: "100m"
-      limits:
-        memory: "512Mi"
-        cpu: "500m"
   redis:
     enabled: true
     image:
       repository: redis
       tag: latest
     port: 6379
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "100m"
+      limits:
+        memory: "256Mi"
+        cpu: "200m"
   merkle:
     enabled: true
     image:
@@ -295,6 +295,8 @@ spec:
         image: "{{ .Values.config.redis.image.repository }}:{{ .Values.config.redis.image.tag }}"
         ports:
         - containerPort: {{ .Values.config.redis.port }}
+        resources:
+          {{- toYaml .Values.config.redis.resources | nindent 10 }}
 {{- end }}
 EOL
 
@@ -319,12 +321,76 @@ spec:
       containers:
       - name: merkle
         image: "{{ .Values.config.merkle.image.repository }}:{{ .Values.config.merkle.image.tag }}"
+        command: ["./target/release/csm_service"]
+        args: ["--uri", "mongodb://{{ include "${CHART_NAME}.fullname" . }}-mongodb:{{ .Values.config.mongodb.port }}"]
         ports:
         - containerPort: {{ .Values.config.merkle.port }}
         env:
         - name: URI
           value: mongodb://{{ include "${CHART_NAME}.fullname" . }}-mongodb:{{ .Values.config.mongodb.port }}
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
 {{- end }}
+EOL
+
+# 生成 mongodb-pvc.yaml
+cat > ${CHART_PATH}/templates/mongodb-pvc.yaml << EOL
+{{- if and .Values.config.mongodb.enabled .Values.config.mongodb.persistence.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "${CHART_NAME}.fullname" . }}-mongodb-pvc
+  labels:
+    {{- include "${CHART_NAME}.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.config.mongodb.persistence.size }}
+  storageClassName: manual
+{{- end }}
+EOL
+
+# 生成 mongodb-service.yaml
+cat > ${CHART_PATH}/templates/mongodb-service.yaml << EOL
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "${CHART_NAME}.fullname" . }}-mongodb
+  labels:
+    {{- include "${CHART_NAME}.labels" . | nindent 4 }}
+spec:
+  ports:
+    - port: {{ .Values.config.mongodb.port }}
+      targetPort: {{ .Values.config.mongodb.port }}
+      protocol: TCP
+      name: mongodb
+  selector:
+    app: {{ include "${CHART_NAME}.fullname" . }}-mongodb
+EOL
+
+# 生成 merkle-service.yaml
+cat > ${CHART_PATH}/templates/merkle-service.yaml << EOL
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "${CHART_NAME}.fullname" . }}-merkle
+  labels:
+    {{- include "${CHART_NAME}.labels" . | nindent 4 }}
+spec:
+  ports:
+    - port: {{ .Values.config.merkle.port }}
+      targetPort: {{ .Values.config.merkle.port }}
+      protocol: TCP
+      name: http
+  selector:
+    app: {{ include "${CHART_NAME}.fullname" . }}-merkle
 EOL
 
 # 使脚本可执行

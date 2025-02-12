@@ -17,9 +17,18 @@ spec:
       containers:
       - name: merkle
         image: "{{ .Values.config.merkle.image.repository }}:{{ .Values.config.merkle.image.tag }}"
+        command: ["./target/release/csm_service"]
+        args: ["--uri", "mongodb://{{ include "helloworld-rollup.fullname" . }}-mongodb:{{ .Values.config.mongodb.port }}"]
         ports:
         - containerPort: {{ .Values.config.merkle.port }}
         env:
         - name: URI
           value: mongodb://{{ include "helloworld-rollup.fullname" . }}-mongodb:{{ .Values.config.mongodb.port }}
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
 {{- end }}
