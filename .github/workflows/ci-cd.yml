@@ -47,14 +47,19 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Debug Secrets
-        run: |
-          echo "Checking if secrets are available:"
-          echo "DEPLOY is set: ${{ secrets.DEPLOY != '' }}"
-          echo "USER_ADDRESS is set: ${{ secrets.USER_ADDRESS != '' }}"
-          echo "PORT is set: ${{ secrets.PORT != '' }}"
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.REPO_LOWER }}
+          tags: |
+            type=raw,value=latest
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=sha,format=long
 
-      - name: Build image
+      - name: Build and push image
         uses: docker/build-push-action@v5
         env:
           DEPLOY: ${{ secrets.DEPLOY }}
@@ -68,9 +73,10 @@ jobs:
           AUTO_SUBMIT: ${{ secrets.AUTO_SUBMIT }}
         with:
           context: .
-          load: true
+          push: ${{ github.event_name != 'pull_request' }}
           file: Dockerfile.ci
-          tags: ${{ env.REGISTRY }}/${{ env.REPO_LOWER }}:temp
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             DEPLOY=${{ secrets.DEPLOY }}
             USER_PRIVATE_ACCOUNT=${{ secrets.USER_PRIVATE_ACCOUNT }}
@@ -81,37 +87,6 @@ jobs:
             SERVER_ADMIN_KEY=${{ secrets.SERVER_ADMIN_KEY }}
             PORT=${{ secrets.PORT }}
             AUTO_SUBMIT=${{ secrets.AUTO_SUBMIT }}
-          no-cache: true
-
-      - name: Get WASM MD5
-        id: wasm-md5
-        run: |
-          docker create --name temp ${{ env.REGISTRY }}/${{ env.REPO_LOWER }}:temp
-          docker cp temp:/app/wasm.md5 .
-          docker rm temp
-          MD5=$(cat wasm.md5 | tr '[:upper:]' '[:lower:]')
-          echo "MD5=$MD5" >> $GITHUB_OUTPUT
-
-      - name: Extract metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.REPO_LOWER }}-${{ steps.wasm-md5.outputs.MD5 }}
-          tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=sha,format=long
-
-      - name: Build and push final image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          push: ${{ github.event_name != 'pull_request' }}
-          file: Dockerfile.ci
-          tags: |
-            ${{ env.REGISTRY }}/${{ env.REPO_LOWER }}:latest
-            ${{ env.REGISTRY }}/${{ env.REPO_LOWER }}:${{ steps.wasm-md5.outputs.MD5 }}
           no-cache: true
 
       - name: Notify build result
