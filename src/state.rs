@@ -153,7 +153,7 @@ impl Transaction {
     pub fn process(&self, pkey: &[u64; 4], _rand: &[u64; 4]) -> Vec<u64> {
         let b = match self.command {
             AUTOTICK => {
-                zkwasm_rust_sdk::dbg!("to run tick\n");
+                zkwasm_rust_sdk::dbg!("to run tick - \n");
                 unsafe {
                     STATE.tick();
                 }
