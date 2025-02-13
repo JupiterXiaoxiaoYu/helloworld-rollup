@@ -77,6 +77,8 @@ COPY . .
 # Build the application and generate MD5
 RUN echo "check rust version" && \
     rustc --version && \
+    echo "check rust toolchain" && \
+    rustup show && \
     make build && \
     export WASM_MD5=$(md5sum ts/node_modules/zkwasm-ts-server/src/application/application_bg.wasm | awk '{ print $1 }' | tr 'a-z' 'A-Z') && \
     echo "WASM_MD5=${WASM_MD5}" && \
