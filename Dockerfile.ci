@@ -82,13 +82,13 @@ RUN echo "check rust version" && \
     make build && \
     export WASM_MD5=$(md5sum ts/node_modules/zkwasm-ts-server/src/application/application_bg.wasm | awk '{ print $1 }' | tr 'a-z' 'A-Z') && \
     echo "WASM_MD5=${WASM_MD5}" && \
-    echo "IMAGE=${WASM_MD5}" > /env.txt
+    echo "${WASM_MD5}" > /wasm.md5
 
 # Production stage
 FROM node:18-slim
 
-# 复制环境变量文件
-COPY --from=builder /env.txt /env.txt
+# 复制 MD5 文件
+COPY --from=builder /wasm.md5 /wasm.md5
 
 # 设置所有环境变量
 ENV DEPLOY="${DEPLOY}" \
@@ -99,8 +99,11 @@ ENV DEPLOY="${DEPLOY}" \
     SETTLER_PRIVATE_ACCOUNT="${SETTLER_PRIVATE_ACCOUNT}" \
     SERVER_ADMIN_KEY="${SERVER_ADMIN_KEY}" \
     PORT="${PORT}" \
-    AUTO_SUBMIT="${AUTO_SUBMIT}" \
-    IMAGE="$(cat /env.txt | grep IMAGE | cut -d= -f2)"
+    AUTO_SUBMIT="${AUTO_SUBMIT}" 
+
+# 加载环境变量
+RUN WASM_MD5_VALUE=$(cat /wasm.md5) && \
+    export IMAGE=${WASM_MD5_VALUE}
 
 WORKDIR /app
 
