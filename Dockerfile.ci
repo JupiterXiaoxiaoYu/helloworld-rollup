@@ -75,14 +75,12 @@ RUN cd ts && \
 COPY . .
 
 # Build the application and generate MD5
-
-
 RUN echo "check rust version" && \
     rustc --version && \
     make build && \
-    mkdir -p /wasm && \
-    md5sum ts/node_modules/zkwasm-ts-server/src/application/application_bg.wasm | \
-    awk '{ print $1 }' | tr 'a-z' 'A-Z' > /wasm/wasm.md5
+    export WASM_MD5=$(md5sum ts/node_modules/zkwasm-ts-server/src/application/application_bg.wasm | awk '{ print $1 }' | tr 'a-z' 'A-Z') && \
+    echo "WASM_MD5=${WASM_MD5}" && \
+    echo "IMAGE=${WASM_MD5}" >> /env.txt
 
 # Production stage
 FROM node:18-slim
@@ -116,12 +114,16 @@ RUN echo "Verifying environment variables:" && \
     echo "PORT=${PORT}" && \
     echo "AUTO_SUBMIT=${AUTO_SUBMIT}"
 
+# 从构建阶段复制环境变量文件
+COPY --from=builder /env.txt /env.txt
+# 加载环境变量
+ENV $(cat /env.txt | xargs)
+
 WORKDIR /app
 
 # Copy only necessary files from builder
 COPY --from=builder /app/ts ./ts
 COPY --from=builder /app/src/admin.pubkey ./src/admin.pubkey
-COPY --from=builder /wasm/wasm.md5 ./wasm.md5
 
 # Create user first
 RUN groupadd -r appuser && useradd -r -g appuser appuser
