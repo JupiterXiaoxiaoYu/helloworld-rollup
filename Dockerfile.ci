@@ -80,17 +80,29 @@ RUN echo "check rust version" && \
     echo "check rust toolchain" && \
     rustup show && \
     make build && \
-    export WASM_MD5=$(md5sum ts/node_modules/zkwasm-ts-server/src/application/application_bg.wasm | awk '{ print $1 }' | tr 'a-z' 'A-Z') && \
-    echo "WASM_MD5=${WASM_MD5}" && \
-    echo "${WASM_MD5}" > /wasm.md5
+    echo "IMAGE=$(md5sum ts/node_modules/zkwasm-ts-server/src/application/application_bg.wasm | awk '{print $1}' | tr 'a-z' 'A-Z')" > /app/.env
 
 # Production stage
 FROM node:18-slim
 
-# 复制 MD5 文件
-COPY --from=builder /wasm.md5 /wasm.md5
+# 重新声明 ARG，这在多阶段构建中是必需的
+ARG DEPLOY
+ARG USER_PRIVATE_ACCOUNT
+ARG USER_ADDRESS
+ARG SETTLEMENT_CONTRACT_ADDRESS
+ARG RPC_PROVIDER
+ARG SETTLER_PRIVATE_ACCOUNT
+ARG SERVER_ADMIN_KEY
+ARG PORT
+ARG AUTO_SUBMIT
 
-# 设置所有环境变量
+COPY --from=builder /app/.env /app/.env
+
+# 设置环境变量
+RUN echo "IMAGE=$(cat /wasm.md5)" > /env.txt && \
+    set -a && . /env.txt && set +a && \
+    env >> /etc/environment
+
 ENV DEPLOY="${DEPLOY}" \
     USER_PRIVATE_ACCOUNT="${USER_PRIVATE_ACCOUNT}" \
     USER_ADDRESS="${USER_ADDRESS}" \
@@ -101,9 +113,19 @@ ENV DEPLOY="${DEPLOY}" \
     PORT="${PORT}" \
     AUTO_SUBMIT="${AUTO_SUBMIT}" 
 
-# 加载环境变量
-RUN WASM_MD5_VALUE=$(cat /wasm.md5) && \
-    export IMAGE=${WASM_MD5_VALUE}
+# 添加调试信息
+RUN echo "Verifying environment variables:" && \
+    echo "DEPLOY=${DEPLOY}" && \
+    echo "USER_ADDRESS=${USER_ADDRESS}" && \
+    echo "PORT=${PORT}" && \
+    echo "AUTO_SUBMIT=${AUTO_SUBMIT}"
+
+# 从构建阶段复制环境变量文件
+COPY --from=builder /env.txt /env.txt
+
+RUN echo "check env.txt" && \
+    cat /env.txt && \
+    echo "check env.txt done"
 
 WORKDIR /app
 
