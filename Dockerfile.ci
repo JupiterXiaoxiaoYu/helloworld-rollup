@@ -98,11 +98,6 @@ ARG AUTO_SUBMIT
 
 COPY --from=builder /app/.env /app/.env
 
-# 设置环境变量
-RUN echo "IMAGE=$(cat /wasm.md5)" > /env.txt && \
-    set -a && . /env.txt && set +a && \
-    env >> /etc/environment
-
 ENV DEPLOY="${DEPLOY}" \
     USER_PRIVATE_ACCOUNT="${USER_PRIVATE_ACCOUNT}" \
     USER_ADDRESS="${USER_ADDRESS}" \
@@ -121,11 +116,11 @@ RUN echo "Verifying environment variables:" && \
     echo "AUTO_SUBMIT=${AUTO_SUBMIT}"
 
 # 从构建阶段复制环境变量文件
-COPY --from=builder /env.txt /env.txt
+COPY --from=builder /app/.env /app/.env
 
-RUN echo "check env.txt" && \
-    cat /env.txt && \
-    echo "check env.txt done"
+RUN echo "check env" && \
+    cat /app/.env && \
+    echo "check env done"
 
 WORKDIR /app
 
