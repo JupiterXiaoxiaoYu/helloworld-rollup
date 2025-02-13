@@ -82,26 +82,15 @@ RUN echo "check rust version" && \
     make build && \
     export WASM_MD5=$(md5sum ts/node_modules/zkwasm-ts-server/src/application/application_bg.wasm | awk '{ print $1 }' | tr 'a-z' 'A-Z') && \
     echo "WASM_MD5=${WASM_MD5}" && \
-    echo "IMAGE=${WASM_MD5}" >> /env.txt
+    echo "IMAGE=${WASM_MD5}" > /env.txt
 
 # Production stage
 FROM node:18-slim
 
-# 从构建阶段复制环境变量文件
+# 复制环境变量文件
 COPY --from=builder /env.txt /env.txt
 
-# 正确设置环境变量
-RUN export $(cat /env.txt | xargs) && \
-    # 将环境变量永久化到 ENV 中
-    for i in $(cat /env.txt); do \
-        key=$(echo $i | cut -d= -f1); \
-        value=$(echo $i | cut -d= -f2); \
-        echo "ENV $key=$value" >> /tmp/env.docker; \
-    done && \
-    cat /tmp/env.docker >> /Dockerfile && \
-    rm /tmp/env.docker
-
-# 其他环境变量设置
+# 设置所有环境变量
 ENV DEPLOY="${DEPLOY}" \
     USER_PRIVATE_ACCOUNT="${USER_PRIVATE_ACCOUNT}" \
     USER_ADDRESS="${USER_ADDRESS}" \
@@ -110,7 +99,8 @@ ENV DEPLOY="${DEPLOY}" \
     SETTLER_PRIVATE_ACCOUNT="${SETTLER_PRIVATE_ACCOUNT}" \
     SERVER_ADMIN_KEY="${SERVER_ADMIN_KEY}" \
     PORT="${PORT}" \
-    AUTO_SUBMIT="${AUTO_SUBMIT}"
+    AUTO_SUBMIT="${AUTO_SUBMIT}" \
+    IMAGE="$(cat /env.txt | grep IMAGE | cut -d= -f2)"
 
 WORKDIR /app
 
