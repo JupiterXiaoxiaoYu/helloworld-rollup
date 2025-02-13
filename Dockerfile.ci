@@ -87,39 +87,30 @@ RUN echo "check rust version" && \
 # Production stage
 FROM node:18-slim
 
-# 重新声明 ARG，这在多阶段构建中是必需的
-ARG DEPLOY
-ARG USER_PRIVATE_ACCOUNT
-ARG USER_ADDRESS
-ARG SETTLEMENT_CONTRACT_ADDRESS
-ARG RPC_PROVIDER
-ARG SETTLER_PRIVATE_ACCOUNT
-ARG SERVER_ADMIN_KEY
-ARG PORT
-ARG AUTO_SUBMIT
-
-# 设置环境变量
-ENV DEPLOY="${DEPLOY}"
-ENV USER_PRIVATE_ACCOUNT="${USER_PRIVATE_ACCOUNT}"
-ENV USER_ADDRESS="${USER_ADDRESS}"
-ENV SETTLEMENT_CONTRACT_ADDRESS="${SETTLEMENT_CONTRACT_ADDRESS}"
-ENV RPC_PROVIDER="${RPC_PROVIDER}"
-ENV SETTLER_PRIVATE_ACCOUNT="${SETTLER_PRIVATE_ACCOUNT}"
-ENV SERVER_ADMIN_KEY="${SERVER_ADMIN_KEY}"
-ENV PORT="${PORT}"
-ENV AUTO_SUBMIT="${AUTO_SUBMIT}"
-
-# 添加调试信息
-RUN echo "Verifying environment variables:" && \
-    echo "DEPLOY=${DEPLOY}" && \
-    echo "USER_ADDRESS=${USER_ADDRESS}" && \
-    echo "PORT=${PORT}" && \
-    echo "AUTO_SUBMIT=${AUTO_SUBMIT}"
-
 # 从构建阶段复制环境变量文件
 COPY --from=builder /env.txt /env.txt
-# 加载环境变量
-ENV $(cat /env.txt | xargs)
+
+# 正确设置环境变量
+RUN export $(cat /env.txt | xargs) && \
+    # 将环境变量永久化到 ENV 中
+    for i in $(cat /env.txt); do \
+        key=$(echo $i | cut -d= -f1); \
+        value=$(echo $i | cut -d= -f2); \
+        echo "ENV $key=$value" >> /tmp/env.docker; \
+    done && \
+    cat /tmp/env.docker >> /Dockerfile && \
+    rm /tmp/env.docker
+
+# 其他环境变量设置
+ENV DEPLOY="${DEPLOY}" \
+    USER_PRIVATE_ACCOUNT="${USER_PRIVATE_ACCOUNT}" \
+    USER_ADDRESS="${USER_ADDRESS}" \
+    SETTLEMENT_CONTRACT_ADDRESS="${SETTLEMENT_CONTRACT_ADDRESS}" \
+    RPC_PROVIDER="${RPC_PROVIDER}" \
+    SETTLER_PRIVATE_ACCOUNT="${SETTLER_PRIVATE_ACCOUNT}" \
+    SERVER_ADMIN_KEY="${SERVER_ADMIN_KEY}" \
+    PORT="${PORT}" \
+    AUTO_SUBMIT="${AUTO_SUBMIT}"
 
 WORKDIR /app
 
